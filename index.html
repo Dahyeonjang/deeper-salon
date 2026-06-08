@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>디퍼언브랜딩살롱 보석함</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F4F3F8;color:#1A1625}
+.hero{background:#3B2D6E;padding:2rem 2rem 2rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.05)}
+.hero::after{content:'';position:absolute;right:60px;bottom:-60px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.04)}
+.hero-label{font-size:11px;letter-spacing:1.5px;color:#B8A9E0;margin-bottom:10px;text-transform:uppercase}
+.hero-title{font-size:24px;font-weight:500;color:#fff;margin-bottom:8px;letter-spacing:-0.3px;position:relative;z-index:1}
+.hero-sub{font-size:13px;color:#C4B8E8;line-height:1.7;position:relative;z-index:1}
+.body{max-width:640px;margin:0 auto;padding:1.5rem 1.25rem 3rem}
+.tab-bar{display:flex;gap:8px;margin-bottom:1.75rem;flex-wrap:wrap}
+.tab{padding:8px 20px;border-radius:20px;border:1.5px solid #C9C0E8;background:#fff;cursor:pointer;font-size:14px;color:#6B5CA0;transition:all 0.15s;font-family:inherit}
+.tab.active{background:#3B2D6E;color:#fff;border-color:#3B2D6E}
+.tab:hover:not(.active){background:#EEE9FA;border-color:#A899D4}
+.view{display:none}.view.active{display:block}
+.form-card{background:#fff;border-radius:12px;padding:1.5rem;margin-bottom:1rem;border:1px solid #E2DCF4}
+.form-label{font-size:11px;color:#8879B8;letter-spacing:0.6px;text-transform:uppercase;margin-bottom:8px;display:block;font-weight:500}
+.form-row{margin-bottom:1.25rem}
+.form-row:last-child{margin-bottom:0}
+select,textarea,input[type=text]{width:100%;font-family:inherit;font-size:14px;background:#FAF9FD;border:1.5px solid #D6CEF0;border-radius:8px;color:#1A1625;padding:10px 12px;transition:border-color 0.15s}
+select{appearance:auto;cursor:pointer}
+textarea{resize:vertical;min-height:90px}
+select:focus,textarea:focus,input[type=text]:focus{outline:none;border-color:#7B68C8;background:#fff}
+select:hover,textarea:hover,input[type=text]:hover{border-color:#A899D4}
+.tag-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tag-btn{padding:5px 13px;border-radius:20px;border:1.5px solid #D6CEF0;background:#FAF9FD;cursor:pointer;font-size:12px;color:#6B5CA0;transition:all 0.15s;display:flex;align-items:center;gap:5px;font-family:inherit}
+.tag-btn:hover{border-color:#A899D4;background:#EEE9FA}
+.tag-btn.selected{background:#3B2D6E;color:#fff;border-color:#3B2D6E}
+.tag-btn .del{font-size:10px;opacity:0.45;cursor:pointer}
+.tag-btn .del:hover{opacity:1}
+.tag-add-row{display:flex;gap:6px}
+.tag-add-row input{flex:1;font-size:13px}
+.tag-add-btn{padding:9px 14px;border-radius:8px;border:1.5px solid #D6CEF0;background:#FAF9FD;cursor:pointer;font-size:13px;color:#6B5CA0;white-space:nowrap;font-family:inherit}
+.tag-add-btn:hover{background:#EEE9FA;border-color:#A899D4}
+.author-row{display:flex;gap:8px}
+.author-row select{flex:1}
+.author-row input{flex:1;max-width:160px}
+.submit-btn{width:100%;padding:12px;border-radius:8px;border:none;background:#3B2D6E;color:#fff;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all 0.15s}
+.submit-btn:hover{background:#4E3D8A}
+.submit-btn:disabled{opacity:0.6;cursor:not-allowed}
+.refresh-row{display:flex;align-items:center;justify-content:flex-end;margin-bottom:1rem}
+.refresh-btn{padding:6px 14px;border-radius:20px;border:1.5px solid #C9C0E8;background:#fff;cursor:pointer;font-size:12px;color:#6B5CA0;font-family:inherit;transition:all 0.15s}
+.refresh-btn:hover{background:#EEE9FA;border-color:#A899D4}
+.member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:1.5rem}
+.member-btn{background:#fff;border:1.5px solid #E2DCF4;border-radius:12px;padding:1rem;cursor:pointer;text-align:left;transition:all 0.15s;font-family:inherit}
+.member-btn:hover{border-color:#A899D4;background:#F7F5FD}
+.member-btn.active{border-color:#3B2D6E;background:#F7F5FD;border-width:2px}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;margin-bottom:10px}
+.member-name{font-weight:500;font-size:14px;margin-bottom:3px;color:#1A1625}
+.gem-count{font-size:11px;color:#8879B8}
+.cards-wrap{background:#fff;border-radius:12px;padding:1.5rem;border:1px solid #E2DCF4}
+.cards-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #EEE9FA}
+.cards-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500}
+.cards-name{font-size:16px;font-weight:500;color:#1A1625}
+.cards-count{font-size:12px;color:#8879B8;margin-left:2px}
+.card-item{padding:14px 16px;border-radius:8px;border:1px solid #E2DCF4;margin-bottom:8px;background:#FAF9FD;transition:border-color 0.15s}
+.card-item:hover{border-color:#A899D4}
+.card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.card-tag{padding:2px 9px;border-radius:10px;font-size:11px;background:#EEE9FA;color:#5E4FA0;border:1px solid #D6CEF0}
+.card-content{font-size:14px;line-height:1.7;color:#1A1625;margin-bottom:8px}
+.card-footer{display:flex;align-items:center;justify-content:space-between}
+.card-meta{font-size:11px;color:#9B8EC4;display:flex;gap:4px}
+.card-meta span+span::before{content:'·';margin-right:4px;opacity:0.5}
+.card-actions{display:flex;gap:6px;opacity:0;transition:opacity 0.15s}
+.card-item:hover .card-actions{opacity:1}
+.card-act-btn{padding:3px 10px;border-radius:6px;border:1px solid #D6CEF0;background:#fff;font-size:11px;cursor:pointer;font-family:inherit;color:#6B5CA0;transition:all 0.15s}
+.card-act-btn:hover{background:#EEE9FA;border-color:#A899D4}
+.card-act-btn.del{color:#C0556A;border-color:#EAC8D0}
+.card-act-btn.del:hover{background:#FCEEF1;border-color:#C0556A}
+.edit-area{margin-top:8px}
+.edit-area textarea{font-size:14px;min-height:70px;margin-bottom:8px}
+.edit-tag-grid{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.edit-btns{display:flex;gap:6px}
+.edit-save{padding:6px 14px;border-radius:6px;border:none;background:#3B2D6E;color:#fff;font-size:12px;cursor:pointer;font-family:inherit}
+.edit-save:hover{background:#4E3D8A}
+.edit-cancel{padding:6px 12px;border-radius:6px;border:1.5px solid #D6CEF0;background:#FAF9FD;color:#6B5CA0;font-size:12px;cursor:pointer;font-family:inherit}
+.edit-cancel:hover{background:#EEE9FA}
+.empty-state{padding:3rem 0;text-align:center;color:#9B8EC4;font-size:13px;line-height:2.2}
+.loading{text-align:center;padding:2rem;color:#9B8EC4;font-size:13px}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#3B2D6E;color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">DEEPER UNBRANDING SALON</div>
+  <div class="hero-title">💎 디퍼언브랜딩살롱 보석함</div>
+  <div class="hero-sub">서로의 재능과 장점,<br>새로 발견한 것은 무엇이든지 적어주세요</div>
+</div>
+
+<div class="body">
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('record',event)">기록하기</button>
+    <button class="tab" onclick="switchTab('view',event)">보석 모아보기</button>
+  </div>
+
+  <div id="view-record" class="view active">
+    <div class="form-card">
+      <div class="form-row">
+        <label class="form-label">멤버</label>
+        <select id="target-member"><option value="">누구의 원석을 기록할까요?</option></select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">키워드 <span style="text-transform:none;letter-spacing:0;font-size:11px;color:#9B8EC4;font-weight:400">(선택 · 직접 추가 가능)</span></label>
+        <div class="tag-grid" id="tag-grid"></div>
+        <div class="tag-add-row">
+          <input type="text" id="new-tag-input" placeholder="직접 추가" onkeydown="if(event.key==='Enter')addTag()">
+          <button class="tag-add-btn" onclick="addTag()">+ 추가</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">발견한 장점 · 재능</label>
+        <textarea id="card-content" placeholder="어떤 장점이나 재능을 발견했나요?"></textarea>
+      </div>
+      <div class="form-row">
+        <label class="form-label">기록한 사람 <span style="text-transform:none;letter-spacing:0;font-size:11px;color:#9B8EC4;font-weight:400">(선택)</span></label>
+        <div class="author-row">
+          <select id="author-select"><option value="">멤버 선택</option></select>
+          <input type="text" id="author-text" placeholder="이름 직접 입력" style="display:none">
+        </div>
+      </div>
+      <div class="form-row">
+        <button class="submit-btn" id="submit-btn" onclick="submitCard()">보석 저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-view" class="view">
+    <div class="refresh-row">
+      <button class="refresh-btn" onclick="loadCards()">↻ 새로고침</button>
+    </div>
+    <div class="member-grid" id="member-grid"></div>
+    <div id="cards-wrap-outer" style="display:none">
+      <div class="cards-wrap"><div id="cards-section"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCjjZ-HojvC_UlCt1S0FiF_kAH6ycM59e0",
+  authDomain: "deeper-salon-gems.firebaseapp.com",
+  projectId: "deeper-salon-gems",
+  storageBucket: "deeper-salon-gems.firebasestorage.app",
+  messagingSenderId: "1078124451834",
+  appId: "1:1078124451834:web:183e20ed44b40c76b27643"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const MEMBERS=["단무지","솔담","스윗워러","야간비행","퍼핀","햇살","헤더"];
+const BG=["#EDE8F5","#E1F0EC","#F5EBE6","#EFF0F5","#E6EEF7","#EBF2E0","#F0ECF8"];
+const TC=["#5B4E8C","#2E6E58","#8C4A2E","#3D4470","#2C5A8C","#3E6020","#5E3A8C"];
+const DEFAULT_TAGS=["공감 능력","아이디어","창의성","분위기 메이커"];
+
+let selTags=[],selMember=null,cards=[],tags=[...DEFAULT_TAGS];
+
+// init
+const s=document.getElementById('target-member');
+const a=document.getElementById('author-select');
+MEMBERS.forEach(m=>{
+  s.innerHTML+=`<option value="${m}">${m}</option>`;
+  a.innerHTML+=`<option value="${m}">${m}</option>`;
+});
+a.innerHTML+='<option value="직접입력">직접 입력</option>';
+renderTags();
+loadCards();
+
+function renderTags(){
+  const g=document.getElementById('tag-grid');g.innerHTML='';
+  tags.forEach(t=>{
+    const b=document.createElement('button');
+    b.className='tag-btn'+(selTags.includes(t)?' selected':'');
+    b.dataset.tag=t;
+    b.innerHTML=`${t}<span class="del">✕</span>`;
+    b.querySelector('.del').onclick=e=>{e.stopPropagation();removeTag(t);};
+    b.onclick=e=>{if(!e.target.classList.contains('del'))toggleTag(t,b);};
+    g.appendChild(b);
+  });
+}
+
+window.addTag=function(){
+  const i=document.getElementById('new-tag-input');
+  const v=i.value.trim();
+  if(!v)return;
+  if(tags.includes(v)){showToast('이미 있는 키워드예요');return;}
+  tags.push(v);i.value='';renderTags();
+}
+
+function removeTag(tag){
+  tags=tags.filter(t=>t!==tag);
+  selTags=selTags.filter(t=>t!==tag);
+  renderTags();
+}
+
+function toggleTag(tag,btn){
+  if(selTags.includes(tag)){selTags=selTags.filter(t=>t!==tag);btn.classList.remove('selected');}
+  else{selTags.push(tag);btn.classList.add('selected');}
+}
+
+window.submitCard=async function(){
+  const target=document.getElementById('target-member').value;
+  const content=document.getElementById('card-content').value.trim();
+  if(!target){showToast('멤버를 선택해주세요');return;}
+  if(!content){showToast('내용을 입력해주세요');return;}
+  const asel=document.getElementById('author-select').value;
+  const atxt=document.getElementById('author-text').value.trim();
+  const author=asel==='직접입력'?atxt:asel;
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;btn.textContent='저장 중...';
+  try {
+    await addDoc(collection(db,'gems'),{
+      target,content,tags:[...selTags],
+      author:author||'',
+      date:new Date().toLocaleDateString('ko-KR'),
+      createdAt:Date.now()
+    });
+    document.getElementById('target-member').value='';
+    document.getElementById('card-content').value='';
+    document.getElementById('author-select').value='';
+    document.getElementById('author-text').style.display='none';
+    selTags=[];renderTags();
+    await loadCards();
+    showToast('보석 하나 더 💎');
+  } catch(e){
+    showToast('저장 실패. 다시 시도해주세요');
+    console.error(e);
+  }
+  btn.disabled=false;btn.textContent='보석 저장하기';
+}
+
+window.loadCards=async function(){
+  try {
+    const q=query(collection(db,'gems'),orderBy('createdAt','asc'));
+    const snap=await getDocs(q);
+    cards=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderMemberGrid();
+  } catch(e){ console.error(e); }
+}
+
+document.getElementById('author-select').addEventListener('change',function(){
+  document.getElementById('author-text').style.display=this.value==='직접입력'?'block':'none';
+});
+
+function renderMemberGrid(){
+  const g=document.getElementById('member-grid');g.innerHTML='';
+  MEMBERS.forEach((m,i)=>{
+    const cnt=cards.filter(c=>c.target===m).length;
+    const b=document.createElement('button');
+    b.className='member-btn'+(selMember===m?' active':'');
+    b.innerHTML=`<div class="avatar" style="background:${BG[i]};color:${TC[i]}">${m[0]}</div>
+      <div class="member-name">${m}</div>
+      <div class="gem-count">💎 ${cnt}개</div>`;
+    b.onclick=()=>selectMember(m);
+    g.appendChild(b);
+  });
+  if(selMember) renderCards(selMember);
+}
+
+function selectMember(name){
+  selMember=name;
+  document.getElementById('cards-wrap-outer').style.display='block';
+  renderMemberGrid();
+}
+
+function renderCards(name){
+  const i=MEMBERS.indexOf(name);
+  const mc=cards.filter(c=>c.target===name);
+  let html=`<div class="cards-header">
+    <div class="cards-avatar" style="background:${BG[i]};color:${TC[i]}">${name[0]}</div>
+    <span class="cards-name">${name}</span>
+    <span class="cards-count">💎 ${mc.length}개</span>
+  </div>`;
+  if(!mc.length){
+    html+=`<div class="empty-state">아직 기록된 보석이 없어요<br>첫 번째 보석을 남겨주세요</div>`;
+  } else {
+    mc.slice().reverse().forEach(c=>{
+      const tHtml=c.tags&&c.tags.length?`<div class="card-tags">${c.tags.map(t=>`<span class="card-tag">${t}</span>`).join('')}</div>`:'';
+      const meta=[c.author,c.date].filter(Boolean).map(m=>`<span>${m}</span>`).join('');
+      html+=`<div class="card-item" id="card-${c.id}">
+        ${tHtml}
+        <div class="card-content">${c.content}</div>
+        <div class="card-footer">
+          <div class="card-meta">${meta}</div>
+          <div class="card-actions">
+            <button class="card-act-btn" onclick="startEdit('${c.id}')">수정</button>
+            <button class="card-act-btn del" onclick="deleteCard('${c.id}')">삭제</button>
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('cards-section').innerHTML=html;
+}
+
+window.deleteCard=async function(id){
+  if(!confirm('이 보석을 삭제할까요?'))return;
+  await deleteDoc(doc(db,'gems',id));
+  cards=cards.filter(c=>c.id!==id);
+  renderMemberGrid();
+  showToast('삭제했어요');
+}
+
+window.startEdit=function(id){
+  const card=cards.find(c=>c.id===id);
+  if(!card)return;
+  const el=document.getElementById('card-'+id);
+  const tagBtns=tags.map(t=>{
+    const sel=card.tags&&card.tags.includes(t);
+    return `<button class="tag-btn${sel?' selected':''}" onclick="toggleEditTag(this,'${t.replace(/'/g,"\\'")}','${id}')">${t}</button>`;
+  }).join('');
+  el.innerHTML=`<div class="edit-area">
+    <div class="edit-tag-grid">${tagBtns}</div>
+    <textarea id="edit-content-${id}">${card.content}</textarea>
+    <div class="edit-btns">
+      <button class="edit-save" onclick="saveEdit('${id}')">저장</button>
+      <button class="edit-cancel" onclick="renderCards('${card.target}')">취소</button>
+    </div>
+  </div>`;
+  el._editTags=card.tags?[...card.tags]:[];
+}
+
+window.toggleEditTag=function(btn,tag,id){
+  const el=document.getElementById('card-'+id);
+  if(!el._editTags)el._editTags=[];
+  if(el._editTags.includes(tag)){el._editTags=el._editTags.filter(t=>t!==tag);btn.classList.remove('selected');}
+  else{el._editTags.push(tag);btn.classList.add('selected');}
+}
+
+window.saveEdit=async function(id){
+  const el=document.getElementById('card-'+id);
+  const content=document.getElementById('edit-content-'+id).value.trim();
+  if(!content){showToast('내용을 입력해주세요');return;}
+  const editTags=el._editTags||[];
+  await updateDoc(doc(db,'gems',id),{content,tags:editTags});
+  const card=cards.find(c=>c.id===id);
+  card.content=content;card.tags=editTags;
+  renderMemberGrid();
+  showToast('수정했어요 ✓');
+}
+
+window.switchTab=function(tab,e){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  e.target.closest('.tab').classList.add('active');
+  document.getElementById('view-'+tab).classList.add('active');
+  if(tab==='view') loadCards();
+}
+
+window.renderCards=renderCards;
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+</script>
+</body>
+</html>
