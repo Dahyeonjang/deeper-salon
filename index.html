@@ -79,6 +79,16 @@ select:focus,textarea:focus,input:focus{outline:none;border-color:#7B68C8;backgr
 .empty-state{padding:3rem 0;text-align:center;color:#9B8EC4;font-size:13px;line-height:2.2}
 .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#3B2D6E;color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999}
 .toast.show{opacity:1}
+
+.vault-intro{position:relative;min-height:280px;background:#1F1635;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem}
+.vault-coins{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.coin{position:absolute;top:-40px;font-size:22px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(340px) rotate(360deg);opacity:0.2}}
+.vault-text{position:relative;z-index:2;text-align:center;padding:1.5rem}
+.vault-emoji{font-size:30px;margin-bottom:12px;animation:pulse 0.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.vault-line1{color:#fff;font-size:16px;font-weight:600;margin-bottom:8px}
+.vault-line2{color:#C4B8E8;font-size:13px}
 </style>
 </head>
 <body>
@@ -91,7 +101,7 @@ select:focus,textarea:focus,input:focus{outline:none;border-color:#7B68C8;backgr
 
 <div class="body">
   <div class="tab-bar">
-    <button class="tab active" onclick="switchTab('record',event)">기록하기</button>
+    <button class="tab active" onclick="switchTab('record',event)">원석 발굴</button>
     <button class="tab" onclick="switchTab('view',event)">보석 모아보기</button>
   </div>
   <div id="view-record" class="view active">
@@ -125,12 +135,22 @@ select:focus,textarea:focus,input:focus{outline:none;border-color:#7B68C8;backgr
     </div>
   </div>
   <div id="view-view" class="view">
-    <div class="refresh-row">
-      <button class="refresh-btn" onclick="loadCards()">↻ 새로고침</button>
+    <div id="vault-intro" class="vault-intro">
+      <div class="vault-coins" id="vault-coins"></div>
+      <div class="vault-text">
+        <div class="vault-emoji">💎✨💰</div>
+        <div class="vault-line1">보석함을 여는 중입니다</div>
+        <div class="vault-line2">눈이 부실 수 있으니 눈을 가려주세요 😎</div>
+      </div>
     </div>
-    <div class="member-grid" id="member-grid"></div>
-    <div id="cards-wrap-outer" style="display:none">
-      <div class="cards-wrap"><div id="cards-section"></div></div>
+    <div id="vault-content" style="display:none">
+      <div class="refresh-row">
+        <button class="refresh-btn" onclick="loadCards()">↻ 새로고침</button>
+      </div>
+      <div class="member-grid" id="member-grid"></div>
+      <div id="cards-wrap-outer" style="display:none">
+        <div class="cards-wrap"><div id="cards-section"></div></div>
+      </div>
     </div>
   </div>
 </div>
@@ -355,12 +375,66 @@ select:focus,textarea:focus,input:focus{outline:none;border-color:#7B68C8;backgr
     });
   }
 
+  function playVaultSound(){
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      var ctx = new Ctx();
+      var notes = [880, 1100, 1320, 1760];
+      notes.forEach(function(freq, idx){
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        var startTime = ctx.currentTime + idx * 0.09;
+        gain.gain.setValueAtTime(0.0001, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.15, startTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + 0.4);
+      });
+    } catch(e){ /* 오디오 재생 불가 시 조용히 무시 */ }
+  }
+
+  function spawnCoins(){
+    var coinChars = ['💰','💎','✨','🪙','💛'];
+    var container = document.getElementById('vault-coins');
+    if (!container) return;
+    container.innerHTML = '';
+    for (var n = 0; n < 24; n++){
+      var c = document.createElement('div');
+      c.className = 'coin';
+      c.textContent = coinChars[Math.floor(Math.random()*coinChars.length)];
+      c.style.left = Math.random()*95 + '%';
+      c.style.animationDuration = (1 + Math.random()*1.2) + 's';
+      c.style.animationDelay = (Math.random()*0.6) + 's';
+      container.appendChild(c);
+    }
+  }
+
+  function showVaultIntro(callback){
+    var intro = document.getElementById('vault-intro');
+    var content = document.getElementById('vault-content');
+    intro.style.display = 'flex';
+    content.style.display = 'none';
+    spawnCoins();
+    playVaultSound();
+    setTimeout(function(){
+      intro.style.display = 'none';
+      content.style.display = 'block';
+      if (callback) callback();
+    }, 1600);
+  }
+
   function switchTab(tab, e){
     document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
     document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
     e.target.closest('.tab').classList.add('active');
     document.getElementById('view-' + tab).classList.add('active');
-    if (tab === 'view') loadCards();
+    if (tab === 'view') {
+      showVaultIntro(function(){ loadCards(); });
+    }
   }
 
   function showToast(msg){
