@@ -50,6 +50,10 @@ select:focus,textarea:focus,input:focus{outline:none;border-color:#7B68C8;backgr
 .gem-type-badge{display:inline-block;font-size:11px;font-weight:500;color:#5E4FA0;background:#EEE9FA;border:1px solid #D6CEF0;border-radius:10px;padding:2px 9px;margin-bottom:6px}
 .gem-type-badge.pending{color:#A89CC4;background:#F4F3F8;border-color:#E2DCF4}
 .gem-count{font-size:11px;color:#8879B8;display:block}
+.gem-full-badge{display:inline-block;font-size:10px;font-weight:600;color:#fff;background:linear-gradient(135deg,#8C7BD4,#5E4FA0);border-radius:8px;padding:2px 7px;margin-left:6px;animation:sparkle 1.5s ease-in-out infinite}
+@keyframes sparkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.85;transform:scale(1.06)}}
+.gem-story{background:#F7F5FD;border:1px solid #E2DCF4;border-radius:10px;padding:14px 16px;margin-bottom:1.25rem;font-size:13px;line-height:1.7;color:#5E4FA0}
+.gem-story-title{font-size:12px;font-weight:600;color:#3B2D6E;margin-bottom:6px}
 .cards-wrap{background:#fff;border-radius:12px;padding:1.5rem;border:1px solid #E2DCF4}
 .cards-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #EEE9FA;flex-wrap:wrap}
 .cards-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500}
@@ -162,13 +166,13 @@ select:focus,textarea:focus,input:focus{outline:none;border-color:#7B68C8;backgr
   var DEFAULT_TAGS = ["공감 능력","아이디어","창의성","분위기 메이커"];
 
   var GEM_TYPES = {
-    "오팔": {emoji:"🌈", keywords:["창의성","엉뚱발랄","자기통찰","공감 능력","아이디어","유머 감각","다양함","호기심"]},
-    "사파이어": {emoji:"💙", keywords:["분석력","신뢰감","세심한 배려","가치관","차분함","객관적","신중함","책임감"]},
-    "시트린": {emoji:"☀️", keywords:["압도적 적극성","젊은 에너지","활용력","친화력","긍정","열정","추진력"]},
-    "루비": {emoji:"🔴", keywords:["불도저 실행력","세심함","추진력","창의성","리더십","열정","불꽃"]},
-    "문스톤": {emoji:"🌙", keywords:["삶의 내공","필력","아낌없는 나눔","달관","깊이","경청","공감"]},
-    "다이아몬드": {emoji:"💎", keywords:["지성","공감형 리더십","기획력","포용","문제 해결","통찰력","리더십"]},
-    "옐로 다이아몬드": {emoji:"💛", keywords:["따뜻한 에너지","1초 실행력","감사하는 삶","도전 정신","밝음","긍정","유쾌함"]}
+    "오팔": {emoji:"🌈", keywords:["창의성","엉뚱발랄","자기통찰","공감 능력","아이디어","유머 감각","다양함","호기심"], story:"오팔은 보는 각도에 따라 다른 빛이 나오는 보석이에요. 겉으로는 수수해 보이다가 빛이 닿는 순간 핑크, 블루, 골드가 번쩍이죠. 예측 불가능하게 아름다운, 한 마디로 규정이 안 되는 보석이에요."},
+    "사파이어": {emoji:"💙", keywords:["분석력","신뢰감","세심한 배려","가치관","차분함","객관적","신중함","책임감"], story:"사파이어는 감정에 흔들리지 않는 깊고 투명한 파란색이에요. 화려하게 반짝이기보다 보는 사람이 신뢰를 느끼게 만드는, 곁에 있으면 안심이 되는 보석이에요."},
+    "시트린": {emoji:"☀️", keywords:["압도적 적극성","젊은 에너지","활용력","친화력","긍정","열정","추진력"], story:"시트린은 햇살을 품은 것 같은 따뜻하고 밝은 에너지를 가진 수정이에요. '상인의 돌'이라는 별명처럼, 아이디어를 현실로 만들고 주변의 온도를 올리는 보석이에요."},
+    "루비": {emoji:"🔴", keywords:["불도저 실행력","세심함","추진력","창의성","리더십","열정","불꽃"], story:"루비는 보석 중에서 가장 강렬한 불꽃의 에너지를 가졌어요. 빛을 받아서 반짝이는 게 아니라 스스로 빛을 내는, '전사의 돌'이라 불리는 보석이에요."},
+    "문스톤": {emoji:"🌙", keywords:["삶의 내공","필력","아낌없는 나눔","달관","깊이","경청","공감"], story:"문스톤은 달빛을 품은 보석이에요. 직접 빛을 내뿜는 게 아니라 내면에서 은은하게 흘러나오는 빛이 특징이라, 밤이 깊어야 제대로 빛나는 '여행자의 보석'이에요."},
+    "다이아몬드": {emoji:"💎", keywords:["지성","공감형 리더십","기획력","포용","문제 해결","통찰력","리더십"], story:"다이아몬드는 엄청난 압력과 시간을 견뎌서 만들어지는 보석이에요. 단단해지는 과정을 통과한 사람만이 가질 수 있는 빛이고, 빛을 받으면 자기 빛으로 바꿔서 주변을 밝히는 보석이에요."},
+    "옐로 다이아몬드": {emoji:"💛", keywords:["따뜻한 에너지","1초 실행력","감사하는 삶","도전 정신","밝음","긍정","유쾌함"], story:"옐로 다이아몬드는 다이아몬드의 단단함에 태양의 따뜻함과 생명력까지 품은 보석이에요. 차갑게 빛나는 게 아니라 온기와 빛을 동시에 내뿜는, '태양의 보석'이에요."}
   };
 
   /* 멤버별 보석 타입 고정 배정 — 자동 매칭 대신 확정값 사용 */
@@ -281,9 +285,10 @@ select:focus,textarea:focus,input:focus{outline:none;border-color:#7B68C8;backgr
       var mc = cards.filter(function(c){ return c.target === m; });
       var gem = getGemType(mc, m);
       var gemHtml = gem ? '<div class="gem-type-badge">'+gem.emoji+' '+gem.name+'</div>' : '<div class="gem-type-badge pending">아직 원석</div>';
+      var fullBadge = mc.length >= 10 ? '<span class="gem-full-badge">✨ 가득!</span>' : '';
       var b = document.createElement('button');
       b.className = 'member-btn' + (selMember === m ? ' active' : '');
-      b.innerHTML = '<div class="avatar" style="background:'+BG[i]+';color:'+TC[i]+'">'+m[0]+'</div><div class="member-name">'+m+'</div>'+gemHtml+'<span class="gem-count">💎 '+mc.length+'개</span>';
+      b.innerHTML = '<div class="avatar" style="background:'+BG[i]+';color:'+TC[i]+'">'+m[0]+'</div><div class="member-name">'+m+'</div>'+gemHtml+'<span class="gem-count">💎 '+mc.length+'개'+fullBadge+'</span>';
       b.onclick = function(){ selMember = m; document.getElementById('cards-wrap-outer').style.display = 'block'; renderMemberGrid(); };
       g.appendChild(b);
     });
@@ -295,7 +300,8 @@ select:focus,textarea:focus,input:focus{outline:none;border-color:#7B68C8;backgr
     var mc = cards.filter(function(c){ return c.target === name; });
     var gem = getGemType(mc, name);
     var gemHtml = gem ? '<span class="gem-type-badge">'+gem.emoji+' '+gem.name+'</span>' : '';
-    var html = '<div class="cards-header"><div class="cards-avatar" style="background:'+BG[i]+';color:'+TC[i]+'">'+name[0]+'</div><span class="cards-name">'+name+'</span>'+gemHtml+'<span class="cards-count">💎 '+mc.length+'개</span></div>';
+    var storyHtml = gem && GEM_TYPES[gem.name] ? '<div class="gem-story"><div class="gem-story-title">'+gem.emoji+' '+gem.name+' 이야기</div>'+GEM_TYPES[gem.name].story+'</div>' : '';
+    var html = storyHtml + '<div class="cards-header"><div class="cards-avatar" style="background:'+BG[i]+';color:'+TC[i]+'">'+name[0]+'</div><span class="cards-name">'+name+'</span>'+gemHtml+'<span class="cards-count">💎 '+mc.length+'개</span></div>';
     if (!mc.length) {
       html += '<div class="empty-state">아직 기록된 보석이 없어요<br>첫 번째 보석을 남겨주세요</div>';
     } else {
