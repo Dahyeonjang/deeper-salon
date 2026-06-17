@@ -46,13 +46,15 @@ select:focus,textarea:focus,input:focus{outline:none;border-color:#7B68C8;backgr
 .member-btn:hover{border-color:#A899D4;background:#F7F5FD}
 .member-btn.active{border-color:#3B2D6E;background:#F7F5FD;border-width:2px}
 .avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;margin-bottom:10px}
-.member-name{font-weight:500;font-size:14px;margin-bottom:3px}
-.gem-count{font-size:11px;color:#8879B8}
+.member-name{font-weight:500;font-size:14px;margin-bottom:4px}
+.gem-type-badge{display:inline-block;font-size:11px;font-weight:500;color:#5E4FA0;background:#EEE9FA;border:1px solid #D6CEF0;border-radius:10px;padding:2px 9px;margin-bottom:6px}
+.gem-type-badge.pending{color:#A89CC4;background:#F4F3F8;border-color:#E2DCF4}
+.gem-count{font-size:11px;color:#8879B8;display:block}
 .cards-wrap{background:#fff;border-radius:12px;padding:1.5rem;border:1px solid #E2DCF4}
-.cards-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #EEE9FA}
+.cards-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #EEE9FA;flex-wrap:wrap}
 .cards-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500}
 .cards-name{font-size:16px;font-weight:500}
-.cards-count{font-size:12px;color:#8879B8;margin-left:2px}
+.cards-count{font-size:12px;color:#8879B8;margin-left:auto}
 .card-item{padding:14px 16px;border-radius:8px;border:1px solid #E2DCF4;margin-bottom:8px;background:#FAF9FD;transition:border-color 0.15s}
 .card-item:hover{border-color:#A899D4}
 .card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
@@ -130,175 +132,250 @@ select:focus,textarea:focus,input:focus{outline:none;border-color:#7B68C8;backgr
 </div>
 <div class="toast" id="toast"></div>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
-const firebaseConfig={
-  apiKey:"AIzaSyCjjZ-HojvC_UlCt1S0FiF_kAH6ycM59e0",
-  authDomain:"deeper-salon-gems.firebaseapp.com",
-  projectId:"deeper-salon-gems",
-  storageBucket:"deeper-salon-gems.firebasestorage.app",
-  messagingSenderId:"1078124451834",
-  appId:"1:1078124451834:web:183e20ed44b40c76b27643"
-};
-firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore();
+(function(){
+  "use strict";
 
-const MEMBERS=["단무지","솔담","스윗워러","야간비행","퍼핀","햇살","헤더"];
-const BG=["#EDE8F5","#E1F0EC","#F5EBE6","#EFF0F5","#E6EEF7","#EBF2E0","#F0ECF8"];
-const TC=["#5B4E8C","#2E6E58","#8C4A2E","#3D4470","#2C5A8C","#3E6020","#5E3A8C"];
-const DEFAULT_TAGS=["공감 능력","아이디어","창의성","분위기 메이커"];
-let selTags=[],selMember=null,cards=[],tags=[...DEFAULT_TAGS];
+  var firebaseConfig = {
+    apiKey: "AIzaSyCjjZ-HojvC_UlCt1S0FiF_kAH6ycM59e0",
+    authDomain: "deeper-salon-gems.firebaseapp.com",
+    projectId: "deeper-salon-gems",
+    storageBucket: "deeper-salon-gems.firebasestorage.app",
+    messagingSenderId: "1078124451834",
+    appId: "1:1078124451834:web:183e20ed44b40c76b27643"
+  };
 
-const sm=document.getElementById('target-member');
-const sa=document.getElementById('author-select');
-MEMBERS.forEach(m=>{
-  sm.innerHTML+=`<option value="${m}">${m}</option>`;
-  sa.innerHTML+=`<option value="${m}">${m}</option>`;
-});
-sa.innerHTML+='<option value="직접입력">직접 입력</option>';
-sa.addEventListener('change',function(){
-  document.getElementById('author-text').style.display=this.value==='직접입력'?'inline-block':'none';
-});
-renderTags();
-loadCards();
+  if (typeof firebase === "undefined") {
+    document.getElementById('cards-section').innerHTML =
+      '<div class="empty-state">Firebase 라이브러리를 불러오지 못했어요.<br>인터넷 연결을 확인하고 새로고침 해주세요.</div>';
+    return;
+  }
 
-function renderTags(){
-  const g=document.getElementById('tag-grid');g.innerHTML='';
-  tags.forEach(t=>{
-    const b=document.createElement('button');
-    b.className='tag-btn'+(selTags.includes(t)?' selected':'');
-    b.innerHTML=`${t}<span class="del" onclick="event.stopPropagation();removeTag('${t.replace(/'/g,"\\'")}')" >✕</span>`;
-    b.onclick=function(e){if(!e.target.classList.contains('del'))toggleTag(t,b);};
-    g.appendChild(b);
+  firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore();
+
+  var MEMBERS = ["단무지","솔담","스윗워러","야간비행","퍼핀","햇살","헤더"];
+  var BG = ["#EDE8F5","#E1F0EC","#F5EBE6","#EFF0F5","#E6EEF7","#EBF2E0","#F0ECF8"];
+  var TC = ["#5B4E8C","#2E6E58","#8C4A2E","#3D4470","#2C5A8C","#3E6020","#5E3A8C"];
+  var DEFAULT_TAGS = ["공감 능력","아이디어","창의성","분위기 메이커"];
+
+  var GEM_TYPES = {
+    "오팔": {emoji:"🌈", keywords:["창의성","엉뚱발랄","자기통찰","공감 능력","아이디어","유머 감각","다양함","호기심"]},
+    "사파이어": {emoji:"💙", keywords:["분석력","신뢰감","세심한 배려","가치관","차분함","객관적","신중함","책임감"]},
+    "시트린": {emoji:"☀️", keywords:["압도적 적극성","젊은 에너지","활용력","친화력","긍정","열정","추진력"]},
+    "루비": {emoji:"🔴", keywords:["불도저 실행력","세심함","추진력","창의성","리더십","열정","불꽃"]},
+    "문스톤": {emoji:"🌙", keywords:["삶의 내공","필력","아낌없는 나눔","달관","깊이","경청","공감"]},
+    "다이아몬드": {emoji:"💎", keywords:["지성","공감형 리더십","기획력","포용","문제 해결","통찰력","리더십"]},
+    "옐로 다이아몬드": {emoji:"💛", keywords:["따뜻한 에너지","1초 실행력","감사하는 삶","도전 정신","밝음","긍정","유쾌함"]}
+  };
+
+  function getGemType(memberCards){
+    var allTags = [];
+    memberCards.forEach(function(c){ if(c.tags) allTags = allTags.concat(c.tags); });
+    var allText = memberCards.map(function(c){ return c.content || ''; }).join(' ');
+    if (allTags.length === 0) return null;
+    var best = null, bestScore = -1;
+    Object.keys(GEM_TYPES).forEach(function(name){
+      var info = GEM_TYPES[name];
+      var score = 0;
+      info.keywords.forEach(function(k){
+        allTags.forEach(function(t){ if (t.indexOf(k) !== -1 || k.indexOf(t) !== -1) score += 2; });
+        if (allText.indexOf(k) !== -1) score += 1;
+      });
+      if (score > bestScore) { bestScore = score; best = name; }
+    });
+    return bestScore > 0 ? {name: best, emoji: GEM_TYPES[best].emoji} : null;
+  }
+
+  var selTags = [], selMember = null, cards = [], tags = DEFAULT_TAGS.slice();
+
+  var sm = document.getElementById('target-member');
+  var sa = document.getElementById('author-select');
+  MEMBERS.forEach(function(m){
+    sm.innerHTML += '<option value="'+m+'">'+m+'</option>';
+    sa.innerHTML += '<option value="'+m+'">'+m+'</option>';
   });
-}
-
-function addTag(){
-  const i=document.getElementById('new-tag-input');
-  const v=i.value.trim();
-  if(!v)return;
-  if(tags.includes(v)){showToast('이미 있는 키워드예요');return;}
-  tags.push(v);i.value='';renderTags();
-}
-
-function removeTag(tag){
-  tags=tags.filter(t=>t!==tag);
-  selTags=selTags.filter(t=>t!==tag);
-  renderTags();
-}
-
-function toggleTag(tag,btn){
-  if(selTags.includes(tag)){selTags=selTags.filter(t=>t!==tag);btn.classList.remove('selected');}
-  else{selTags.push(tag);btn.classList.add('selected');}
-}
-
-async function submitCard(){
-  const target=document.getElementById('target-member').value;
-  const content=document.getElementById('card-content').value.trim();
-  if(!target){showToast('멤버를 선택해주세요');return;}
-  if(!content){showToast('내용을 입력해주세요');return;}
-  const asel=document.getElementById('author-select').value;
-  const atxt=document.getElementById('author-text').value.trim();
-  const author=asel==='직접입력'?atxt:asel;
-  const btn=document.getElementById('submit-btn');
-  btn.disabled=true;btn.textContent='저장 중...';
-  try{
-    await db.collection('gems').add({target,content,tags:[...selTags],author:author||'',date:new Date().toLocaleDateString('ko-KR'),createdAt:Date.now()});
-    document.getElementById('target-member').value='';
-    document.getElementById('card-content').value='';
-    document.getElementById('author-select').value='';
-    document.getElementById('author-text').style.display='none';
-    selTags=[];renderTags();
-    await loadCards();
-    showToast('보석 하나 더 💎');
-  }catch(e){showToast('저장 실패. 다시 시도해주세요');console.error(e);}
-  btn.disabled=false;btn.textContent='보석 저장하기';
-}
-
-async function loadCards(){
-  try{
-    const snap=await db.collection('gems').orderBy('createdAt','asc').get();
-    cards=snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderMemberGrid();
-  }catch(e){console.error(e);}
-}
-
-function renderMemberGrid(){
-  const g=document.getElementById('member-grid');g.innerHTML='';
-  MEMBERS.forEach((m,i)=>{
-    const cnt=cards.filter(c=>c.target===m).length;
-    const b=document.createElement('button');
-    b.className='member-btn'+(selMember===m?' active':'');
-    b.innerHTML=`<div class="avatar" style="background:${BG[i]};color:${TC[i]}">${m[0]}</div><div class="member-name">${m}</div><div class="gem-count">💎 ${cnt}개</div>`;
-    b.onclick=()=>{selMember=m;document.getElementById('cards-wrap-outer').style.display='block';renderMemberGrid();};
-    g.appendChild(b);
+  sa.innerHTML += '<option value="직접입력">직접 입력</option>';
+  sa.addEventListener('change', function(){
+    document.getElementById('author-text').style.display = this.value === '직접입력' ? 'inline-block' : 'none';
   });
-  if(selMember)renderCards(selMember);
-}
 
-function renderCards(name){
-  const i=MEMBERS.indexOf(name);
-  const mc=cards.filter(c=>c.target===name);
-  let html=`<div class="cards-header"><div class="cards-avatar" style="background:${BG[i]};color:${TC[i]}">${name[0]}</div><span class="cards-name">${name}</span><span class="cards-count">💎 ${mc.length}개</span></div>`;
-  if(!mc.length){html+=`<div class="empty-state">아직 기록된 보석이 없어요<br>첫 번째 보석을 남겨주세요</div>`;}
-  else{
-    mc.slice().reverse().forEach(c=>{
-      const tHtml=c.tags&&c.tags.length?`<div class="card-tags">${c.tags.map(t=>`<span class="card-tag">${t}</span>`).join('')}</div>`:'';
-      const meta=[c.author,c.date].filter(Boolean).map(m=>`<span>${m}</span>`).join('');
-      html+=`<div class="card-item" id="card-${c.id}">${tHtml}<div class="card-content">${c.content}</div><div class="card-footer"><div class="card-meta">${meta}</div><div class="card-actions"><button class="card-act-btn" onclick="startEdit('${c.id}')">수정</button><button class="card-act-btn del" onclick="deleteCard('${c.id}')">삭제</button></div></div></div>`;
+  function renderTags(){
+    var g = document.getElementById('tag-grid'); g.innerHTML = '';
+    tags.forEach(function(t){
+      var b = document.createElement('button');
+      b.className = 'tag-btn' + (selTags.indexOf(t) !== -1 ? ' selected' : '');
+      var del = document.createElement('span');
+      del.className = 'del'; del.textContent = '✕';
+      del.onclick = function(e){ e.stopPropagation(); removeTag(t); };
+      b.textContent = t;
+      b.appendChild(del);
+      b.onclick = function(e){ if (e.target !== del) toggleTag(t, b); };
+      g.appendChild(b);
     });
   }
-  document.getElementById('cards-section').innerHTML=html;
-}
 
-async function deleteCard(id){
-  if(!confirm('이 보석을 삭제할까요?'))return;
-  await db.collection('gems').doc(id).delete();
-  cards=cards.filter(c=>c.id!==id);
-  renderMemberGrid();showToast('삭제했어요');
-}
+  function addTag(){
+    var i = document.getElementById('new-tag-input');
+    var v = i.value.trim();
+    if (!v) return;
+    if (tags.indexOf(v) !== -1) { showToast('이미 있는 키워드예요'); return; }
+    tags.push(v); i.value=''; renderTags();
+  }
 
-function startEdit(id){
-  const card=cards.find(c=>c.id===id);if(!card)return;
-  const el=document.getElementById('card-'+id);
-  const tagBtns=tags.map(t=>{const sel=card.tags&&card.tags.includes(t);return `<button class="tag-btn${sel?' selected':''}" onclick="toggleEditTag(this,'${t.replace(/'/g,"\\'")}','${id}')">${t}</button>`;}).join('');
-  el.innerHTML=`<div class="edit-area"><div class="edit-tag-grid">${tagBtns}</div><textarea id="edit-content-${id}">${card.content}</textarea><div class="edit-btns"><button class="edit-save" onclick="saveEdit('${id}')">저장</button><button class="edit-cancel" onclick="renderCards('${card.target}')">취소</button></div></div>`;
-  el._editTags=card.tags?[...card.tags]:[];
-}
+  function removeTag(tag){
+    tags = tags.filter(function(t){ return t !== tag; });
+    selTags = selTags.filter(function(t){ return t !== tag; });
+    renderTags();
+  }
 
-function toggleEditTag(btn,tag,id){
-  const el=document.getElementById('card-'+id);
-  if(!el._editTags)el._editTags=[];
-  if(el._editTags.includes(tag)){el._editTags=el._editTags.filter(t=>t!==tag);btn.classList.remove('selected');}
-  else{el._editTags.push(tag);btn.classList.add('selected');}
-}
+  function toggleTag(tag, btn){
+    if (selTags.indexOf(tag) !== -1) { selTags = selTags.filter(function(t){ return t !== tag; }); btn.classList.remove('selected'); }
+    else { selTags.push(tag); btn.classList.add('selected'); }
+  }
 
-async function saveEdit(id){
-  const el=document.getElementById('card-'+id);
-  const content=document.getElementById('edit-content-'+id).value.trim();
-  if(!content){showToast('내용을 입력해주세요');return;}
-  const editTags=el._editTags||[];
-  await db.collection('gems').doc(id).update({content,tags:editTags});
-  const card=cards.find(c=>c.id===id);
-  card.content=content;card.tags=editTags;
-  renderMemberGrid();showToast('수정했어요 ✓');
-}
+  function submitCard(){
+    var target = document.getElementById('target-member').value;
+    var content = document.getElementById('card-content').value.trim();
+    if (!target) { showToast('멤버를 선택해주세요'); return; }
+    if (!content) { showToast('내용을 입력해주세요'); return; }
+    var asel = document.getElementById('author-select').value;
+    var atxt = document.getElementById('author-text').value.trim();
+    var author = asel === '직접입력' ? atxt : asel;
+    var btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = '저장 중...';
+    db.collection('gems').add({
+      target: target, content: content, tags: selTags.slice(),
+      author: author || '', date: new Date().toLocaleDateString('ko-KR'), createdAt: Date.now()
+    }).then(function(){
+      document.getElementById('target-member').value = '';
+      document.getElementById('card-content').value = '';
+      document.getElementById('author-select').value = '';
+      document.getElementById('author-text').style.display = 'none';
+      selTags = []; renderTags();
+      return loadCards();
+    }).then(function(){
+      showToast('보석 하나 더 💎');
+    }).catch(function(e){
+      showToast('저장 실패. 다시 시도해주세요');
+      console.error(e);
+    }).finally(function(){
+      btn.disabled = false; btn.textContent = '보석 저장하기';
+    });
+  }
 
-function switchTab(tab,e){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  e.target.closest('.tab').classList.add('active');
-  document.getElementById('view-'+tab).classList.add('active');
-  if(tab==='view')loadCards();
-}
+  function loadCards(){
+    return db.collection('gems').orderBy('createdAt','asc').get().then(function(snap){
+      cards = snap.docs.map(function(d){ var data = d.data(); data.id = d.id; return data; });
+      renderMemberGrid();
+    }).catch(function(e){ console.error(e); });
+  }
 
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2000);
-}
+  function renderMemberGrid(){
+    var g = document.getElementById('member-grid'); g.innerHTML = '';
+    MEMBERS.forEach(function(m, i){
+      var mc = cards.filter(function(c){ return c.target === m; });
+      var gem = getGemType(mc);
+      var gemHtml = gem ? '<div class="gem-type-badge">'+gem.emoji+' '+gem.name+'</div>' : '<div class="gem-type-badge pending">아직 원석</div>';
+      var b = document.createElement('button');
+      b.className = 'member-btn' + (selMember === m ? ' active' : '');
+      b.innerHTML = '<div class="avatar" style="background:'+BG[i]+';color:'+TC[i]+'">'+m[0]+'</div><div class="member-name">'+m+'</div>'+gemHtml+'<span class="gem-count">💎 '+mc.length+'개</span>';
+      b.onclick = function(){ selMember = m; document.getElementById('cards-wrap-outer').style.display = 'block'; renderMemberGrid(); };
+      g.appendChild(b);
+    });
+    if (selMember) renderCards(selMember);
+  }
+
+  function renderCards(name){
+    var i = MEMBERS.indexOf(name);
+    var mc = cards.filter(function(c){ return c.target === name; });
+    var gem = getGemType(mc);
+    var gemHtml = gem ? '<span class="gem-type-badge">'+gem.emoji+' '+gem.name+'</span>' : '';
+    var html = '<div class="cards-header"><div class="cards-avatar" style="background:'+BG[i]+';color:'+TC[i]+'">'+name[0]+'</div><span class="cards-name">'+name+'</span>'+gemHtml+'<span class="cards-count">💎 '+mc.length+'개</span></div>';
+    if (!mc.length) {
+      html += '<div class="empty-state">아직 기록된 보석이 없어요<br>첫 번째 보석을 남겨주세요</div>';
+    } else {
+      mc.slice().reverse().forEach(function(c){
+        var tHtml = (c.tags && c.tags.length) ? '<div class="card-tags">' + c.tags.map(function(t){ return '<span class="card-tag">'+t+'</span>'; }).join('') + '</div>' : '';
+        var meta = [c.author, c.date].filter(Boolean).map(function(m){ return '<span>'+m+'</span>'; }).join('');
+        html += '<div class="card-item" id="card-'+c.id+'">'+tHtml+'<div class="card-content">'+c.content+'</div><div class="card-footer"><div class="card-meta">'+meta+'</div><div class="card-actions"><button class="card-act-btn" onclick="window.__startEdit(\''+c.id+'\')">수정</button><button class="card-act-btn del" onclick="window.__deleteCard(\''+c.id+'\')">삭제</button></div></div></div>';
+      });
+    }
+    document.getElementById('cards-section').innerHTML = html;
+  }
+
+  function deleteCard(id){
+    if (!confirm('이 보석을 삭제할까요?')) return;
+    db.collection('gems').doc(id).delete().then(function(){
+      cards = cards.filter(function(c){ return c.id !== id; });
+      renderMemberGrid();
+      showToast('삭제했어요');
+    });
+  }
+
+  function startEdit(id){
+    var card = cards.filter(function(c){ return c.id === id; })[0];
+    if (!card) return;
+    var el = document.getElementById('card-' + id);
+    var tagBtns = tags.map(function(t){
+      var sel = card.tags && card.tags.indexOf(t) !== -1;
+      return '<button class="tag-btn'+(sel?' selected':'')+'" onclick="window.__toggleEditTag(this,\''+t.replace(/'/g,"\\'")+'\',\''+id+'\')">'+t+'</button>';
+    }).join('');
+    el.innerHTML = '<div class="edit-area"><div class="edit-tag-grid">'+tagBtns+'</div><textarea id="edit-content-'+id+'">'+card.content+'</textarea><div class="edit-btns"><button class="edit-save" onclick="window.__saveEdit(\''+id+'\')">저장</button><button class="edit-cancel" onclick="window.__cancelEdit(\''+card.target+'\')">취소</button></div></div>';
+    el._editTags = card.tags ? card.tags.slice() : [];
+  }
+
+  function toggleEditTag(btn, tag, id){
+    var el = document.getElementById('card-' + id);
+    if (!el._editTags) el._editTags = [];
+    if (el._editTags.indexOf(tag) !== -1) { el._editTags = el._editTags.filter(function(t){ return t !== tag; }); btn.classList.remove('selected'); }
+    else { el._editTags.push(tag); btn.classList.add('selected'); }
+  }
+
+  function saveEdit(id){
+    var el = document.getElementById('card-' + id);
+    var content = document.getElementById('edit-content-' + id).value.trim();
+    if (!content) { showToast('내용을 입력해주세요'); return; }
+    var editTags = el._editTags || [];
+    db.collection('gems').doc(id).update({content: content, tags: editTags}).then(function(){
+      var card = cards.filter(function(c){ return c.id === id; })[0];
+      card.content = content; card.tags = editTags;
+      renderMemberGrid();
+      showToast('수정했어요 ✓');
+    });
+  }
+
+  function switchTab(tab, e){
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+    e.target.closest('.tab').classList.add('active');
+    document.getElementById('view-' + tab).classList.add('active');
+    if (tab === 'view') loadCards();
+  }
+
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 2000);
+  }
+
+  // expose to global for inline onclick handlers
+  window.addTag = addTag;
+  window.submitCard = submitCard;
+  window.loadCards = loadCards;
+  window.switchTab = switchTab;
+  window.__startEdit = startEdit;
+  window.__deleteCard = deleteCard;
+  window.__toggleEditTag = toggleEditTag;
+  window.__saveEdit = saveEdit;
+  window.__cancelEdit = function(target){ renderCards(target); };
+
+  renderTags();
+  loadCards();
+
+})();
 </script>
 </body>
 </html>
